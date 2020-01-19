@@ -1,4 +1,3 @@
-import detectron2
 from detectron2.utils.logger import setup_logger
 from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
@@ -9,9 +8,9 @@ import time
 import numpy as np
 from numpy.linalg import norm
 import cv2
-import random
 import json
 import argparse
+import urllib.request
 
 
 parser = argparse.ArgumentParser(description='Fixation mapping for Tobii output with FAIR Detectron2')
@@ -25,13 +24,13 @@ video_path = args.VideoFile
 fixation_file_path = args.DataFile
 output_folder = args.OutFolder
 
-"""
-# example inputs
-detectron_path = r'C:\Users\marki\detectron2'
-video_path = r'F:\Play\synch_video_data\recording30_full.mp4'
-fixaton_file_path = r'F:\Play\synch_video_data\Xiaoling Wang_GeoFARA Metrics.xlsx'
-output_foler = ''
-"""
+
+# # example inputs
+# detectron_path = r'C:\Users\marki\detectron2'
+# video_path = r'F:\Play\synch_video_data\recording30_full.mp4'
+# fixation_file_path = r'F:\Play\synch_video_data\Xiaoling Wang_GeoFARA Metrics.xlsx'
+# output_folder = os.getcwd()
+
 
 # get path to model
 cwd = os.getcwd()
@@ -42,8 +41,20 @@ setup_logger()
 cfg = get_cfg()
 cfg.merge_from_file(detectron_path + '\configs\COCO-PanopticSegmentation\panoptic_fpn_R_50_1x.yaml')
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
-cfg.MODEL.WEIGHTS = model_path + '\model_final_dbfeb4.pkl'
-predictor = DefaultPredictor(cfg)
+try:
+    cfg.MODEL.WEIGHTS = os.path.join(model_path, 'model_final_dbfeb4.pkl')
+    predictor = DefaultPredictor(cfg)
+    print('using local weight file... ')
+except:
+    print('downloadnig model weights... ')
+    if not os.path.exists(model_path):
+        os.makedirs(model_path)
+    weights = urllib.request.urlretrieve('https://dl.fbaipublicfiles.com/detectron2/COCO-PanopticSegmentation/panoptic_fpn_R_50_1x/139514544/model_final_dbfeb4.pkl',
+                                         os.path.join(model_path, 'model_final_dbfeb4.pkl'))
+    cfg.MODEL.WEIGHTS = os.path.join(model_path, 'model_final_dbfeb4.pkl')
+    predictor = DefaultPredictor(cfg)
+    print('weights downloaded,')
+
 
 # read label json
 with open('labels/coco_stuff_rev.json') as json_file:
@@ -58,18 +69,18 @@ with open('labels/coco_thing_rev.json') as json_file:
 def map_fixation(video_path, fixation_path):
     """function to process video and map fixation"""
     df = pd.read_excel(fixation_path)
-    print('start to map fixations, total fixations to map:', len(df))
 
     fixation_df = df[df['Eye movement type'] == 'Fixation']
     # mid frame timestamp of fixation, like in manual mapping
     mid_fixation = fixation_df.groupby(['Eye movement type index']).median().reset_index()
     cap = cv2.VideoCapture(video_path)
     fps = cap.get(cv2.CAP_PROP_FPS)
-    print('fps:', fps)
+
+    print('start to map fixations, total fixations to map:', len(mid_fixation))
 
     # loop through fixation and do mapping
     time_offset = df.iloc[0]['Recording timestamp']  # segment frame offset
-    # todo: where to start time?
+    # todo: where to start time, full video or segmented video?
     mid_fixation['target'] = ""
     mid_fixation['phone_x'] = ""
     mid_fixation['phone_y'] = ""
@@ -179,8 +190,8 @@ def fixation_to_phone_coords(mask, fixation):
 
 # run mapping
 masks_ = []  # for function use
-mapped_fixation = map_fixation(video_path, fixaton_file_path)
-output_name = 'mapped_' + os.path.basename(fixaton_file_path)
+mapped_fixation = map_fixation(video_path, fixation_file_path)
+output_name = 'mapped_' + os.path.basename(fixation_file_path)
 mapped_fixation.to_excel(os.path.join(output_folder, output_name))
 
 
