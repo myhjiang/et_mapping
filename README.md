@@ -34,7 +34,7 @@ Raw gaze data is not supported in this version.
 
 ## Run
 
-**fixation_mapping.py **
+**fixation_mapping.py**
 
 Before running, make sure that the `labels` folder is in the same working directory of the script.
 
