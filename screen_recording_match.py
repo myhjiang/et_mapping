@@ -26,6 +26,7 @@ if args.index:
     if_build_index = False
     index_path = args.index
 else:
+    if_build_index = True
     index_path = os.path.join(pics_path, 'index.csv')
 if args.binsize:
     bin_size = tuple(args.binsize)
@@ -33,14 +34,14 @@ if args.binsize:
 # arguments: time offset, path to "database", ET data table, phone recoding video
 # optional: bin size, index path
 
-# sample arguments
-pics_path = ''
-index_path = r'F:\Play\transformation_phone_mapping\image search engine\index\index_202030.csv'  # -- optional
-bin_size = (20, 20, 30)  # optional
-video_path = ''
-fixation_path = ''
-time_offset = 123  # in miliseconds
-if_build_index = True
+# # sample arguments
+# pics_path = ''
+# index_path = r'F:\Play\transformation_phone_mapping\image search engine\index\index_202030.csv'  # -- optional
+# bin_size = (20, 20, 30)  # optional
+# video_path = ''
+# fixation_path = ''
+# time_offset = 123  # in miliseconds
+# if_build_index = True
 
 
 # build index: independent of query input

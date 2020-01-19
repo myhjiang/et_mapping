@@ -13,23 +13,23 @@ import argparse
 import urllib.request
 
 
-parser = argparse.ArgumentParser(description='Fixation mapping for Tobii output with FAIR Detectron2')
-parser.add_argument('Detectron', metavar='dp', type=str, help='Path to your detectron package folder')
-parser.add_argument('VideoFile', metavar='vf', type=str, help='Path to recording video')
-parser.add_argument('DataFile', metavar='ff', type=str, help='Path to tobii fixation data export')
-parser.add_argument('OutFolder', metavar='of', type=str, help='Path to output folder')
-args = parser.parse_args()
-detectron_path = args.Detectron
-video_path = args.VideoFile
-fixation_file_path = args.DataFile
-output_folder = args.OutFolder
+# parser = argparse.ArgumentParser(description='Fixation mapping for Tobii output with FAIR Detectron2')
+# parser.add_argument('Detectron', metavar='dp', type=str, help='Path to your detectron package folder')
+# parser.add_argument('VideoFile', metavar='vf', type=str, help='Path to recording video')
+# parser.add_argument('DataFile', metavar='ff', type=str, help='Path to tobii fixation data export')
+# parser.add_argument('OutFolder', metavar='of', type=str, help='Path to output folder')
+# args = parser.parse_args()
+# detectron_path = args.Detectron
+# video_path = args.VideoFile
+# fixation_file_path = args.DataFile
+# output_folder = args.OutFolder
 
 
-# # example inputs
-# detectron_path = r'C:\Users\marki\detectron2'
-# video_path = r'F:\Play\synch_video_data\recording30_full.mp4'
-# fixation_file_path = r'F:\Play\synch_video_data\Xiaoling Wang_GeoFARA Metrics.xlsx'
-# output_folder = os.getcwd()
+# example inputs
+detectron_path = r'C:\Users\marki\detectron2'
+video_path = r'F:\Play\synch_video_data\recording30_full.mp4'
+fixation_file_path = r'F:\Play\synch_video_data\Xiaoling Wang_GeoFARA Metrics.xlsx'
+output_folder = os.getcwd()
 
 
 # get path to model
@@ -130,12 +130,12 @@ def map_fixation(video_path, fixation_path):
                 category = 'unlabeled'
                 continue
         end_3 = time.time()
-        print('fixation mapped', i, ', time cost: ', end_3-start_time)
+        print('fixation mapped', i+1, ', time cost: ', round(end_3-start_time, 2), 'seconds')
         # add to df
         mid_fixation.at[i, 'target'] = category
 
     # only use subset
-    mid_fixation = mid_fixation[['Recording timestamp', 'Eye movement type index',
+    mid_fixation = mid_fixation[['Recording timestamp', 'Eye movement type index', 'Gaze event duration',
                                  'Fixation point X', 'Fixation point Y', 'target', 'phone_x', 'phone_y']]
 
     return mid_fixation
@@ -153,6 +153,7 @@ def fixation_to_phone_coords(mask, fixation):
     try:
         contours, _, = cv2.findContours(mask_im, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     except:
+        # for older cv version
         _, contours, _, = cv2.findContours(mask_im, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     rect = cv2.minAreaRect(contours[0])
     box = cv2.boxPoints(rect)
@@ -192,7 +193,7 @@ def fixation_to_phone_coords(mask, fixation):
 masks_ = []  # for function use
 mapped_fixation = map_fixation(video_path, fixation_file_path)
 output_name = 'mapped_' + os.path.basename(fixation_file_path)
-mapped_fixation.to_excel(os.path.join(output_folder, output_name))
+mapped_fixation.to_excel(os.path.join(output_folder, output_name), index=False)
 
 
 print('Fixation mapping finished.')
