@@ -26,7 +26,7 @@ The **full stream (i.e. not segment)** video of the participant. This video can 
 
 ### Fixation data table
 
-`.xlsx` data table exported with Tobii ProLab. Must include the following columns: `Recording timestamp, Eye movement type, Eye movement type index, Gaze event duration, Fixation point X, Fixation point Y`.  Other columns are optional. 
+`.tsv` data table exported with Tobii ProLab. Must include the following columns: `Recording timestamp, Eye movement type, Eye movement type index, Gaze event duration, Fixation point X, Fixation point Y`.  Other columns are optional. 
 
 The fixation data table can be the the data of a segment. 
 
@@ -34,7 +34,7 @@ Raw gaze data is not supported in this version.
 
 ## Run
 
-**fixation_mapping.py**
+**fixation_mapping.py **
 
 Before running, make sure that the `labels` folder is in the same working directory of the script.
 
@@ -45,13 +45,13 @@ Before running, make sure that the `labels` folder is in the same working direct
 - DataFile (ff): path to fixation data table (.xlsx)
 - OutFolder (of): folder for output file
 
-For example: `$ python fixation_mapping.py C:\Users\marki\detectron2 F:\videos\recording30_full.mp4  F:\exports\recording30_segment.xlsx F:\exports\mapped `   
+For example: `$ python fixation_mapping.py C:\Users\marki\detectron2 F:\videos\recording30_full.mp4  F:\exports\recording30_segment.tsv F:\exports\mapped `   
 
  **Note:** During the execution of the script, a `.pkl` file will be downloaded as the weight for the segmentation model. It will be saved at `./model/model_final_dbfeb4.pkl`
 
 ## Output
 
-A `.xlsx` data table with each fixation mapped to an object. An example table would look like: 
+A `.tsv` data table with each fixation mapped to an object. An example table would look like: 
 
 | Recording timestamp | Eye movement type index | Gaze  event duration | Fixation point X | Fixation point Y | target     |  phone_x |  phone_y |
 | ------------------: | ----------------------: | -------------------: | ---------------: | ---------------: | :--------- | -------: | -------: |
@@ -67,3 +67,10 @@ When a fixations is mapped to a `cell phone` object, the approximate (proportion
 ## Syncing mobile eye-tracking data with screen-recordings of the mobile stimuli 
 
 (to be filled)
+
+## Source and more
+
+- Detectron2
+- Panoptic segmentation
+- Coco thing dataset, coco stuff dataset
+- Tobii ProLab manual

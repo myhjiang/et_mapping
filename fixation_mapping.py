@@ -13,23 +13,23 @@ import argparse
 import urllib.request
 
 
-# parser = argparse.ArgumentParser(description='Fixation mapping for Tobii output with FAIR Detectron2')
-# parser.add_argument('Detectron', metavar='dp', type=str, help='Path to your detectron package folder')
-# parser.add_argument('VideoFile', metavar='vf', type=str, help='Path to recording video')
-# parser.add_argument('DataFile', metavar='ff', type=str, help='Path to tobii fixation data export')
-# parser.add_argument('OutFolder', metavar='of', type=str, help='Path to output folder')
-# args = parser.parse_args()
-# detectron_path = args.Detectron
-# video_path = args.VideoFile
-# fixation_file_path = args.DataFile
-# output_folder = args.OutFolder
+parser = argparse.ArgumentParser(description='Fixation mapping for Tobii output with FAIR Detectron2')
+parser.add_argument('Detectron', metavar='dp', type=str, help='Path to your detectron package folder')
+parser.add_argument('VideoFile', metavar='vf', type=str, help='Path to recording video')
+parser.add_argument('DataFile', metavar='ff', type=str, help='Path to tobii fixation data export')
+parser.add_argument('OutFolder', metavar='of', type=str, help='Path to output folder')
+args = parser.parse_args()
+detectron_path = args.Detectron
+video_path = args.VideoFile
+fixation_file_path = args.DataFile
+output_folder = args.OutFolder
 
 
-# example inputs
-detectron_path = r'C:\Users\marki\detectron2'
-video_path = r'F:\Play\synch_video_data\recording30_full.mp4'
-fixation_file_path = r'F:\Play\synch_video_data\Xiaoling Wang_GeoFARA Metrics.xlsx'
-output_folder = os.getcwd()
+# # example inputs
+# detectron_path = r'C:\Users\marki\detectron2'
+# video_path = r'F:\Play\synch_video_data\recording30_full.mp4'
+# fixation_file_path = r'F:\Play\synch_video_data\example.xlsx'
+# output_folder = os.getcwd()
 
 
 # get path to model
@@ -68,7 +68,7 @@ with open('labels/coco_thing_rev.json') as json_file:
 # process video and map fixation
 def map_fixation(video_path, fixation_path):
     """function to process video and map fixation"""
-    df = pd.read_excel(fixation_path)
+    df = pd.read_csv(fixation_path, delimiter='\t')
 
     fixation_df = df[df['Eye movement type'] == 'Fixation']
     # mid frame timestamp of fixation, like in manual mapping
@@ -193,7 +193,7 @@ def fixation_to_phone_coords(mask, fixation):
 masks_ = []  # for function use
 mapped_fixation = map_fixation(video_path, fixation_file_path)
 output_name = 'mapped_' + os.path.basename(fixation_file_path)
-mapped_fixation.to_excel(os.path.join(output_folder, output_name), index=False)
+mapped_fixation.to_tsv(os.path.join(output_folder, output_name), index=False, delimiter='\t')
 
 
 print('Fixation mapping finished.')
