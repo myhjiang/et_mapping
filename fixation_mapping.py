@@ -39,7 +39,7 @@ model_path = os.path.join(cwd, 'model')
 setup_logger()
 # get config and model
 cfg = get_cfg()
-cfg.merge_from_file(detectron_path + '\configs\COCO-PanopticSegmentation\panoptic_fpn_R_50_1x.yaml')
+cfg.merge_from_file(os.path.join(detectron_path, 'configs\COCO-PanopticSegmentation\panoptic_fpn_R_50_1x.yaml'))
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.5  # set threshold for this model
 try:
     cfg.MODEL.WEIGHTS = os.path.join(model_path, 'model_final_dbfeb4.pkl')
@@ -103,7 +103,6 @@ def map_fixation(video_path, fixation_path):
         segmentation_time = end_2 - end_1  # about 200ms, up to 600
         # locate fixation
         masks = segments.cpu().numpy()  # shape (1080, 1920)
-        masks_.append(masks)
         segment_id = masks[int(fix_y), int(fix_x)]  # !!!
         category_id = categories[segment_id - 1]['category_id']
         is_thing = categories[segment_id - 1]['isthing']
@@ -155,7 +154,12 @@ def fixation_to_phone_coords(mask, fixation):
     except:
         # for older cv version
         _, contours, _, = cv2.findContours(mask_im, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    rect = cv2.minAreaRect(contours[0])
+    # deal with multiple masks
+    if len(contours) > 1:
+        contour = sorted(contours, key=cv2.contourArea)[-1]
+    else:
+        contour = contours[0]
+    rect = cv2.minAreaRect(contour)
     box = cv2.boxPoints(rect)
     box = np.int0(box)
     bottom_point = np.array(box[0])
@@ -171,18 +175,18 @@ def fixation_to_phone_coords(mask, fixation):
         p1 = top_point
         distance_12 = norm(np.cross(p2 - p1, p1 - fixation)) / norm(p2 - p1)  # on the shorter edge
         distance_23 = norm(np.cross(p2 - p3, p3 - fixation)) / norm(p2 - p3)  # on the longer edge
-        phone_x = distance_12 / right_edge
-        phone_y = distance_23 / left_edge
+        phone_x = distance_23 / right_edge
+        phone_y = distance_12 / left_edge
     elif left_edge < right_edge:
         p3 = top_point
         p2 = left_point
         p1 = bottom_point
         distance_12 = norm(np.cross(p2 - p1, p1 - fixation)) / norm(p2 - p1)
         distance_23 = norm(np.cross(p2 - p3, p3 - fixation)) / norm(p2 - p3)
-        phone_x = distance_12 / left_edge
-        phone_y = distance_23 / right_edge
+        phone_x = distance_23 / left_edge
+        phone_y = (right_edge - distance_12) / right_edge
     else:
-        print('detect funny phone shape')
+        print('approximate screen coordinates not calculated. ')
         phone_x = -1
         phone_y = -1
 
@@ -190,13 +194,14 @@ def fixation_to_phone_coords(mask, fixation):
 
 
 # run mapping
-masks_ = []  # for function use
+start_time = time.time()
 mapped_fixation = map_fixation(video_path, fixation_file_path)
 output_name = 'mapped_' + os.path.basename(fixation_file_path)
-mapped_fixation.to_tsv(os.path.join(output_folder, output_name), index=False, delimiter='\t')
+mapped_fixation.to_csv(os.path.join(output_folder, output_name), index=False, sep='\t')
+end_time = time.time()
 
-
-print('Fixation mapping finished.')
+print(f"Fixation mapping finished. {len(mapped_fixation)} fixations mapped, "
+      f"time cost: {round(end_time-start_time)} seconds")
 
 # todo: change the print time thing in mapping function
 # todo: one at a time or batch?
