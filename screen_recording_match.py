@@ -8,28 +8,29 @@ import glob
 import pandas as pd
 import argparse
 
-parser = argparse.ArgumentParser(description='do something together with screen recording video')
-parser.add_argument('TargetImagesFolder', metavar='im', type=str, help='')
+parser = argparse.ArgumentParser(description='sync with screen recording video and map fixations to phone content')
+parser.add_argument('TargetImagesFolder', metavar='im', type=str, help='The folders with candidate images')
 parser.add_argument('ScreenVideo', metavar='sr', type=str, help='Path to screen recording video')
 parser.add_argument('FixationsFile', metavar='fx', type=str, help='Path to mapped fixation file xlsx')
 parser.add_argument('TimeOffset', metavar='t', type=int, help='time offset in milliseconds')
-parser.add_argument('--index', metavar='-i', action='store', dest=index_path, type=str)
-parser.add_argument('--binsize', metavar='-b', action='store', dest=binsizeinput, nargs='+', type=int)
+parser.add_argument('--index', metavar='-i', nargs='?', action='store', dest='index_path', type=str, default='none',
+                    description='if index is already built, use the old index to save time')
+parser.add_argument('--binsize', metavar='-b', action='store', dest='bin_size', nargs='+', type=int,
+                    description='customize HSV bin size for histogram comparision')
+
 args = parser.parse_args()
 pics_path = args.TargetImagesFolder
 video_path = args.ScreenVideo
-fixation_path = args.FixationFile
+fixation_path = args.FixationsFile
 time_offset = args.TimeOffset
-# todo: the optionals
-if args.index:
-    # if there is index, don't build it, skip to query directly
-    if_build_index = False
-    index_path = args.index
+index_path = args.index_path
+bin_size = args.bin_size
+
+# optional bin size and tuples
+if bin_size is None:
+    bin_size = (20, 20, 30)
 else:
-    if_build_index = True
-    index_path = os.path.join(pics_path, 'index.csv')
-if args.binsize:
-    bin_size = tuple(args.binsize)
+    bin_size = tuple(bin_size)
 
 # arguments: time offset, path to "database", ET data table, phone recoding video
 # optional: bin size, index path
@@ -41,7 +42,6 @@ if args.binsize:
 # video_path = ''
 # fixation_path = ''
 # time_offset = 123  # in miliseconds
-# if_build_index = True
 
 
 # build index: independent of query input
@@ -84,31 +84,46 @@ def query(query, index_path, limit):
 
 def find_query_image(timestamp, offset, video_cap):
     sr_time = timestamp - offset
-    frame_no = round(sr_time / 1000 * fps)
+    print(sr_time)
+    frame_no = round(sr_time / 1000 * sr_fps)
+    print(frame_no)
     video_cap.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
-    ret, frame = cap.read()
+    ret, frame = video_cap.read()
     return frame
 
 
 # do
-df = pd.read_excel(fixation_path)
+df = pd.read_csv(fixation_path, delimiter='\t')
+df['best_match'] = ''
+df['screentime'] = 0
 sr_video = cv2.VideoCapture(video_path)
 sr_fps = sr_video.get(cv2.CAP_PROP_FPS)
-if if_build_index:
-    build_index(pics_path, index_path, bin_size)  # only build index when there is no index yet
+
+# only build index when there is no index yet
+if index_path == 'none':
+    index_path = os.path.join(pics_path, 'index.csv')
+    print(f'building index... index will be stored at {index_path}')
+    build_index(pics_path, index_path, bin_size)
+else:
+    print(f'using index from {index_path}')
 
 # loop fixation df to fill best match if fixation is on phone
+print('mapping fixation to screen recording contents...')
 for i in df.index:
-    if df.at[i, 'target'] == 'cell phont':
+    if df.at[i, 'target'] == 'cell phone':
         et_timestamp = df.at[i, 'Recording timestamp']
+        df.at[i, 'screentime'] = et_timestamp - time_offset
         phone_image = find_query_image(et_timestamp, time_offset, sr_video)
-        best_match = query(phone_image, index_path, 3)[0]
+        if phone_image is None:
+            break
+        best_match = query(phone_image, index_path, 3)[0][1]
         df.at[i, 'best_match'] = best_match
     else:
         continue
 
-filename = os.path.basename(fixaton_path)
+filename = os.path.basename(fixation_path)
 filedir = os.path.dirname(fixation_path)
-df.to_excel(os.path.join(filedir, 'screen_' + filename))
+df.to_csv(os.path.join(filedir, 'screen_' + filename), sep='\t')
 
+print(f"mapping finished, file stored at {os.path.join(filedir, 'screen_' + filename)}")
 # finished
