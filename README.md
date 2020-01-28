@@ -34,6 +34,8 @@ The fixation data table can be the the data of a segment.
 Raw gaze data is not supported in this version. 
 
 ## Run
+**Clone this repo first, and make sure everything is there before running the scripts**  
+
 
 **fixation_mapping.py**
 
