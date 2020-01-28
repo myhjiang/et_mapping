@@ -2,10 +2,11 @@
 
 Automated fixation mapping based on Tobii Glasses' data with FAIR's Detectron2. 
 
-(more to be filled)
+(to be filled)
 
 ## Requirements
 
+- GPU (Inference is super slow on CPU only, thus is not supported in the script)
 - Detectron2
 
   For Linux / MacOS: follow the [official guide](https://github.com/facebookresearch/detectron2/blob/master/INSTALL.md) for installation and dependencies. 
@@ -34,7 +35,7 @@ Raw gaze data is not supported in this version.
 
 ## Run
 
-**fixation_mapping.py **
+**fixation_mapping.py**
 
 Before running, make sure that the `labels` folder is in the same working directory of the script.
 
