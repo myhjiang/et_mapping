@@ -11,12 +11,12 @@ import argparse
 parser = argparse.ArgumentParser(description='sync with screen recording video and map fixations to phone content')
 parser.add_argument('TargetImagesFolder', metavar='im', type=str, help='The folders with candidate images')
 parser.add_argument('ScreenVideo', metavar='sr', type=str, help='Path to screen recording video')
-parser.add_argument('FixationsFile', metavar='fx', type=str, help='Path to mapped fixation file xlsx')
+parser.add_argument('FixationsFile', metavar='fx', type=str, help='Path to mapped fixation file tsv')
 parser.add_argument('TimeOffset', metavar='t', type=int, help='time offset in milliseconds')
 parser.add_argument('--index', metavar='-i', nargs='?', action='store', dest='index_path', type=str, default='none',
-                    description='if index is already built, use the old index to save time')
+                    help='if index is already built, use the old index to save time')
 parser.add_argument('--binsize', metavar='-b', action='store', dest='bin_size', nargs='+', type=int,
-                    description='customize HSV bin size for histogram comparision')
+                    help='customize HSV bin size for histogram comparision')
 
 args = parser.parse_args()
 pics_path = args.TargetImagesFolder
