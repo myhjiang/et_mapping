@@ -61,7 +61,7 @@ A `.tsv` data table with each fixation mapped to an object. An example table wou
 |              715321 |                    1514 |                   60 |              765 |              357 | road       |          |          |
 |            715521.5 |                    1515 |                  300 |              559 |              308 | road       |          |          |
 |            715762.5 |                    1516 |                  140 |              632 |              355 | car        |          |          |
-|            716361.5 |                    1517 |                  580 |             1021 |              700 | cell phone | 0.769508 | 0.338248 |
+|            716361.5 |                    1517 |                  580 |             1021 |              700 | cell phone | 0.76 | 0.33 |
 
 where `target` columns record the object the fixation is mapped to. A complete list of the available objects can be found at `labels/complete_list.txt`  
 
