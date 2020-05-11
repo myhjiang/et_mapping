@@ -81,6 +81,8 @@ When a fixations is mapped to a `cell phone` object, the approximate (proportion
 
 ### Run screen_recording_match.py
 
+Before running, make sure that the `imsearch` folder is in the same working directory of the script.
+
 **Arguments**
 
 - TargetImagesFolder (im): path to the folders with candidate images
