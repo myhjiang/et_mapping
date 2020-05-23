@@ -6,7 +6,7 @@ It maps fixations to real-world objects with panoptic segmentation (using FAIR's
 
 **Note:** the current version only supports fixation data collected with Tobii Pro Glasses 2 and exported by Tobii Pro Lab. 
 
-This is a part of MSc. Thesis *A Solution to Analyze Mobile Eye-tracking Data for GI User Research* by Yuhao (Markie) Jiang, ITC-University of Twente, Enschede, The Netherlands, June 2020. 
+This is a part of MSc. Thesis *A Solution to Analyze Mobile Eye-tracking Data for User Research in GI Science* by Yuhao (Markie) Jiang, ITC-University of Twente, Enschede, The Netherlands, June 2020. 
 
 
 ## Requirements
